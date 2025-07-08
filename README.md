@@ -1,2 +1,3 @@
 # mlx-chat-ui
-UI for MLX library
+
+A webUI tool for interacting with MLX models

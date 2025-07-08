@@ -1,23 +1,31 @@
 [project]
 name = "mlx-chat-ui"
 version = "0.1.0"
-description = "Add your description here"
+description = "A webUI tool for interacting with MLX models"
 readme = "README.md"
+license = {text = "MIT License"}
+authors = [
+    {name = "Peter Mikus"},
+]
 requires-python = "==3.12.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS :: MacOS X",
+]
 dependencies = [
-    "huggingface_hub>=0.33.2",
-    "mlx-lm>=0.25.3",
-    "streamlit>=1.46.1",
-    "requests>=2.32.4",
-    "sseclient-py>=1.8.0",
-    "watchdog>=6.0.0"
+    "huggingface_hub",
+    "mlx-lm",
+    "chainlit",
+    "openai",
 ]
 
 [build-system]
-requires = [
-    "setuptools>=42"
-]
+requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://github.com/pmikus/mlx-chat-ui"
 
 [tool.setuptools.packages.find]
 where = ["src"]
