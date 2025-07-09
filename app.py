@@ -9,14 +9,19 @@ client = AsyncOpenAI(base_url="http://localhost:8080/v1", api_key="fake-key")
 async def chat_profile():
     return [
         cl.ChatProfile(
-            name="DeepSeek-Coder",
-            markdown_description="The underlying LLM model is **DeepSeek-Coder-V2-Lite**.",
+            name="Personal",
+            markdown_description="Personal chat space.",
+        ),
+        cl.ChatProfile(
+            name="Workspace 1",
+            markdown_description="Coding workspace 1.",
         ),
     ]
 
 
 @cl.on_chat_start
 async def start_chat():
+    chat_profile = cl.user_session.get("chat_profile")
     settings = await cl.ChatSettings(
         [
             Select(
@@ -48,14 +53,6 @@ async def start_chat():
                 max=1,
                 step=0.1,
             ),
-            Slider(
-                id="max_output_tokens",
-                label="Max output tokens",
-                initial=512,
-                min=0,
-                max=1024,
-                step=64,
-            ),
         ]
     ).send()
 
@@ -84,9 +81,32 @@ async def main(message: cl.Message):
         messages=messages, **settings, stream=True,
     )
 
-    async for part in stream:
-        if token := part.choices[0].delta.content or "":
-            await msg.stream_token(token)
+#    async for part in stream:
+#        if token := part.choices[0].delta.content or "":
+#            await msg.stream_token(token)
+
+    thinking = False
+
+    # Streaming the thinking
+    async with cl.Step(name="Thinking") as thinking_step:
+        final_answer = cl.Message(content="")
+
+        async for chunk in stream:
+            delta = chunk.choices[0].delta
+
+            if delta.content == "<think>":
+                thinking = True
+                continue
+
+            if delta.content == "</think>":
+                thinking = False
+                await thinking_step.update()
+                continue
+
+            if thinking:
+                await thinking_step.stream_token(delta.content)
+            else:
+                await final_answer.stream_token(delta.content)
 
     messages.append({"role": "assistant", "content": msg.content})
     await msg.update()
