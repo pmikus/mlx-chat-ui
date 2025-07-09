@@ -45,20 +45,14 @@ async def start_chat():
                 max=2,
                 step=0.1,
             ),
-            Slider(
-                id="top_p",
-                label="Top P",
-                initial=0.7,
-                min=0,
-                max=1,
-                step=0.1,
-            ),
         ]
     ).send()
 
     cl.user_session.set(
         "messages",
-        [{"role": "system", "content": "You are a helpful assistant."}],
+        [
+            {"role": "system", "content": "You are a helpful assistant."},
+        ],
     )
     cl.user_session.set("settings", settings)
 
@@ -72,24 +66,32 @@ async def setup_agent(settings):
 async def main(message: cl.Message):
     settings = cl.user_session.get("settings")
     messages = cl.user_session.get("messages")
-    messages.append({"role": "user", "content": message.content})
+    chat_profile = cl.user_session.get("chat_profile")
 
-    msg = cl.Message(content="")
-    await msg.send()
+    if settings["web_search_options"]:
+        settings["web_search_options"] = {
+            "user_location": {
+                "type": "approximate",
+                "approximate": {
+                    "country": "SK",
+                    "city": "Bratislava",
+                    "region": "Bratislava",
+                }
+            },
+            "search_context_size": "low",
+        }
+
+    messages.append({"role": "user", "content": message.content})
 
     stream = await client.chat.completions.create(
         messages=messages, **settings, stream=True,
     )
 
-#    async for part in stream:
-#        if token := part.choices[0].delta.content or "":
-#            await msg.stream_token(token)
-
     thinking = False
 
     # Streaming the thinking
     async with cl.Step(name="Thinking") as thinking_step:
-        final_answer = cl.Message(content="")
+        msg = cl.Message(content="")
 
         async for chunk in stream:
             delta = chunk.choices[0].delta
@@ -106,7 +108,8 @@ async def main(message: cl.Message):
             if thinking:
                 await thinking_step.stream_token(delta.content)
             else:
-                await final_answer.stream_token(delta.content)
+                await msg.stream_token(delta.content)
 
     messages.append({"role": "assistant", "content": msg.content})
     await msg.update()
+    await msg.send()
