@@ -24,10 +24,16 @@ async def start_chat():
             Select(
                 id="model",
                 label="LLM - Model",
-                values=["mlx-community/DeepSeek-Coder-V2-Lite-Instruct-4bit-mlx"],
+                values=[
+                    "mlx-community/DeepSeek-Coder-V2-Lite-Instruct-4bit-mlx",
+                    "mlx-community/DeepSeek-R1-0528-Qwen3-8B-8bit"
+                ],
                 initial_index=0,
             ),
-            Switch(id="web_search_options", label="Search Web Tool", initial=False),
+            Switch(
+                id="web_search_options",
+                label="Search Web Tool",
+                initial=False),
             Slider(
                 id="temperature",
                 label="Temperature",
