@@ -75,7 +75,7 @@ layout = "wide"
 # default_sidebar_state = "open"
 
 # Description of the assistant. This is used for HTML tags.
-description = "Personal AI asistant."
+description = "Personal AI Assistant"
 
 # Chain of Thought (CoT) display mode. Can be "hidden", "tool_call" or "full".
 cot = "full"
@@ -108,7 +108,7 @@ alert_style = "classic"
 # custom_meta_image_url = "https://chainlit-cloud.s3.eu-west-3.amazonaws.com/logo/chainlit_banner.png"
 
 # Load assistant logo directly from URL.
-logo_file_url = ""
+logo_file_url = ""  # "https://lucide.dev/icons/anchor"
 
 # Load assistant avatar image directly from URL.
 default_avatar_file_url = ""

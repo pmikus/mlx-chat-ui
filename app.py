@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 import chainlit as cl
 from chainlit.input_widget import Select, Switch, Slider
 from openai import AsyncOpenAI
@@ -5,38 +7,27 @@ from openai import AsyncOpenAI
 client = AsyncOpenAI(base_url="http://localhost:8080/v1", api_key="fake-key")
 
 
-@cl.set_chat_profiles
-async def chat_profile():
-    return [
-        cl.ChatProfile(
-            name="Personal",
-            markdown_description="Personal chat space.",
-        ),
-        cl.ChatProfile(
-            name="Workspace 1",
-            markdown_description="Coding workspace 1.",
-        ),
-    ]
+@cl.oauth_callback
+def oauth_callback(
+    provider_id: str,
+    token: str,
+    raw_user_data: Dict[str, str],
+    default_user: cl.User,
+) -> Optional[cl.User]:
+    return default_user
 
 
 @cl.on_chat_start
 async def start_chat():
-    chat_profile = cl.user_session.get("chat_profile")
     settings = await cl.ChatSettings(
         [
             Select(
                 id="model",
                 label="LLM - Model",
-                values=[
-                    "mlx-community/DeepSeek-Coder-V2-Lite-Instruct-4bit-mlx"
-                ],
+                values=["mlx-community/DeepSeek-Coder-V2-Lite-Instruct-4bit-mlx"],
                 initial_index=0,
             ),
-            Switch(
-                id="web_search_options",
-                label="Search Web Tool",
-                initial=False
-            ),
+            Switch(id="web_search_options", label="Search Web Tool", initial=False),
             Slider(
                 id="temperature",
                 label="Temperature",
@@ -52,6 +43,7 @@ async def start_chat():
         "messages",
         [
             {"role": "system", "content": "You are a helpful assistant."},
+            *cl.chat_context.to_openai(),
         ],
     )
     cl.user_session.set("settings", settings)
@@ -66,7 +58,6 @@ async def setup_agent(settings):
 async def main(message: cl.Message):
     settings = cl.user_session.get("settings")
     messages = cl.user_session.get("messages")
-    chat_profile = cl.user_session.get("chat_profile")
 
     if settings["web_search_options"]:
         settings["web_search_options"] = {
@@ -76,7 +67,7 @@ async def main(message: cl.Message):
                     "country": "SK",
                     "city": "Bratislava",
                     "region": "Bratislava",
-                }
+                },
             },
             "search_context_size": "low",
         }
@@ -84,7 +75,9 @@ async def main(message: cl.Message):
     messages.append({"role": "user", "content": message.content})
 
     stream = await client.chat.completions.create(
-        messages=messages, **settings, stream=True,
+        messages=messages,
+        **settings,
+        stream=True,
     )
 
     thinking = False

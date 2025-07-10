@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -eo pipefail
 
 # Load environment variables from .env file
 if [ -f .env ]; then
@@ -18,13 +18,11 @@ LOG_FILE=${LOG_FILE:-server.log}
 LOG_LEVEL=${LOG_LEVEL:-DEBUG}
 
 # MLX OpenAI Server
-uv venv --python 3.12
-# Start the mlx_lm server in the background with the specified model
-uv run --with mlx-lm python -m mlx_lm.server --model "${MODEL}" --log-level "${LOG_LEVEL}" --port "${PORT_MLX}" > "$LOG_FILE" 2>&1 &
-
-# Create Python virtual environment
 #uv venv --python 3.12
+# Start the mlx_lm server in the background with the specified model
+#uv run --with mlx-lm python -m mlx_lm.server --model "${MODEL}" --log-level "${LOG_LEVEL}" --port "${PORT_MLX}" > "$LOG_FILE" 2>&1 &
+
 # Activate the virtual environment
 source "$VENV_PATH/bin/activate"
 # Run the Chainlit application
-chainlit run main.py --server.port "${PORT_CHAINLIT}"
+$VENV_PATH/bin/chainlit run app.py

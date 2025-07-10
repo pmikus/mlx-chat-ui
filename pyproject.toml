@@ -13,10 +13,11 @@ classifiers = [
     "Operating System :: MacOS :: MacOS X",
 ]
 dependencies = [
-    "huggingface_hub",
-    "mlx-lm",
-    "chainlit",
-    "openai",
+    "chainlit>=2.6.0",
+    "huggingface-hub>=0.33.2",
+    "langchain>=0.3.26",
+    "mlx-lm>=0.25.3",
+    "openai>=1.93.0",
 ]
 
 [build-system]
